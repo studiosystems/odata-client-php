@@ -9,7 +9,6 @@ use Studiosystems\OData\Query\Builder;
 use Studiosystems\OData\Query\Grammar;
 use Studiosystems\OData\Query\IGrammar;
 use Studiosystems\OData\Query\IProcessor;
-use Studiosystems\OData\Query\Processor;
 use Illuminate\Support\LazyCollection;
 
 class ODataClient implements IODataClient
@@ -42,17 +41,17 @@ class ODataClient implements IODataClient
     /**
      * The return type for the entities
      */
-    private string $entityReturnType;
+    private string|bool|null $entityReturnType = null;
 
     /**
      * The page size
      */
-    private int $pageSize;
+    private int $pageSize = 0;
 
     /**
      * The entityKey to be found
      */
-    private mixed $entityKey;
+    private mixed $entityKey = null;
 
     /**
      * Constructs a new ODataClient.

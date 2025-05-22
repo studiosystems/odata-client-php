@@ -36,14 +36,14 @@ class Entity implements ArrayAccess, Arrayable
     protected array $fillable = [];
     protected array $guarded = [];
     protected array $dates = [];
-    protected string $dateFormat;
+    protected ?string $dateFormat = null;
     protected array $casts = [];
     protected array $with = [];
     protected static array $booted = [];
     protected static bool $unguarded = false;
     protected static array $mutatorCache = [];
     private bool $exists = false;
-    private string $entity;
+    private ?string $entity = null;
 
     /**
      * @throws MassAssignmentException

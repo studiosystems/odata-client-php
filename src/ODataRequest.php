@@ -24,12 +24,12 @@ class ODataRequest implements IODataRequest
     /**
      * An array of headers to send with the request
      */
-    protected array $headers;
+    protected array $headers = [];
 
     /**
      * The body of the request (optional)
      */
-    protected string $requestBody;
+    protected string $requestBody = '';
 
     /**
      * The type of request to make ("GET", "POST", etc.)
@@ -40,17 +40,17 @@ class ODataRequest implements IODataRequest
      * True if the response should be returned as
      * a stream
      */
-    protected bool $returnsStream;
+    protected bool $returnsStream = false;
 
     /**
      * The return type to cast the response as
      */
-    protected object $returnType;
+    protected ?object $returnType = null;
 
     /**
      * The timeout, in seconds
      */
-    protected string|int $timeout;
+    protected string|int $timeout = 0;
 
     private IODataClient $client;
 

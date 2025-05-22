@@ -49,7 +49,7 @@ class Builder
     /**
      * The entity key of the entity set which the query is targeting.
      */
-    public string|array|null $entityKey = null;
+    public string|int|array|null $entityKey = null;
 
     /**
      * The placeholder property for the ? operator in the OData querystring
@@ -335,10 +335,12 @@ class Builder
      * Determine if the given operator and value combination is legal.
      * Prevents using Null values with invalid operators.
      */
-    protected function invalidOperatorAndValue(string $operator, mixed $value): bool
+    protected function invalidOperatorAndValue(?string $operator, mixed $value): bool
     {
-        return is_null($value) && in_array($operator, $this->operators) &&
-            ! in_array($operator, ['=', '<>', '!=']);
+        return is_null($value)
+            && !is_null($operator)
+            && in_array($operator, $this->operators)
+            && ! in_array($operator, ['=', '<>', '!=']);
     }
 
     /**
@@ -684,7 +686,7 @@ class Builder
      * Run the query as a "GET" request against the client.
      * @return IODataRequest
      */
-    protected function runGet(): IODataRequest
+    protected function runGet(): array
     {
         return $this->client->get(
             $this->grammar->compileSelect($this),
@@ -708,7 +710,7 @@ class Builder
     /**
      * Run the query as a "GET" request against the client.
      */
-    protected function runPatch(array $body): IODataRequest
+    protected function runPatch(array $body): array
     {
         return $this->client->patch(
             $this->grammar->compileSelect($this),
@@ -719,7 +721,7 @@ class Builder
     /**
      * Run the query as a "GET" request against the client.
      */
-    protected function runPost(array $body): IODataRequest
+    protected function runPost(array $body): array
     {
         return $this->client->post(
             $this->grammar->compileSelect($this),
@@ -730,7 +732,7 @@ class Builder
     /**
      * Run the query as a "GET" request against the client.
      */
-    protected function runDelete(): IODataRequest
+    protected function runDelete(): array
     {
         return $this->client->delete(
             $this->grammar->compileSelect($this)
@@ -753,7 +755,7 @@ class Builder
     /**
      * Insert a new record into the database.
      */
-    public function insert(array $values): bool|IODataRequest
+    public function insert(array $values): bool|array
     {
         if (empty($values)) {
             return true;

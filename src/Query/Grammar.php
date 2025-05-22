@@ -90,14 +90,33 @@ class Grammar implements IGrammar
         $uri = [];
 
         foreach ($this->selectComponents as $component) {
-            // To compile the query, we'll spin through each component of the query and
-            // see if that component exists. If it does we'll just call the compiler
-            // function for the component which is responsible for making the SQL.
-            if (! is_null($query->$component)) {
-                $method = 'compile'.ucfirst($component);
+            $value = $query->$component;
 
-                $uri[$component] = $this->$method($query, $query->$component);
+            if (in_array($component, ['count', 'totalCount'])) {
+                if ($value !== true) {
+                    continue;
+                }
+            } elseif (in_array($component, ['skip', 'skiptoken', 'take'])) {
+                if ($value === 0) {
+                    continue;
+                }
+            } elseif (in_array($component, ['wheres', 'orders', 'expands', 'properties'])) {
+                if (empty($value)) {
+                    continue;
+                }
+            } elseif ($component === 'entityKey') {
+                if ($value === null || $value === '') {
+                    continue;
+                }
+            } else {
+                if ($value === null || $value === '') {
+                    continue;
+                }
             }
+
+            $method = 'compile'.ucfirst($component);
+
+            $uri[$component] = $this->$method($query, $value);
         }
         return $uri;
     }
@@ -146,12 +165,12 @@ class Grammar implements IGrammar
         if (isset($query->entitySet)
             && (
                 !empty($query->properties)
-                || isset($query->wheres)
-                || isset($query->orders)
-                || isset($query->expands)
-                || isset($query->take)
-                || isset($query->skip)
-                || isset($query->skiptoken)
+                || !empty($query->wheres)
+                || !empty($query->orders)
+                || !empty($query->expands)
+                || $query->take !== 0
+                || $query->skip !== 0
+                || $query->skiptoken !== 0
             )) {
             return $queryString;
         }
@@ -169,7 +188,7 @@ class Grammar implements IGrammar
     /**
      * Compile an aggregated select clause.
      */
-    protected function compileCount(Builder $query, array $aggregate): string
+    protected function compileCount(Builder $query, bool $aggregate): string
     {
         return '/$count';
     }
@@ -182,7 +201,7 @@ class Grammar implements IGrammar
         // If the query is actually performing an aggregating select, we will let that
         // compiler handle the building of the select clauses, as it will need some
         // more syntax that is best handled by that function to keep things neat.
-        if (! is_null($query->count)) {
+        if ($query->count === true) {
             return null;
         }
 
@@ -214,7 +233,7 @@ class Grammar implements IGrammar
         // Each type of where clauses has its own compiler function which is responsible
         // for actually creating the where clauses SQL. This helps keep the code nice
         // and maintainable since each clause has a very small method that it uses.
-        if (is_null($query->wheres)) {
+        if (empty($query->wheres)) {
             return '';
         }
 
@@ -343,7 +362,7 @@ class Grammar implements IGrammar
     /**
      * Compile the "$count" portions of the query.
      */
-    protected function compileTotalCount(Builder $query, int $totalCount): string
+    protected function compileTotalCount(Builder $query, bool $totalCount): string
     {
         if (isset($query->entityKey)) {
             return '';

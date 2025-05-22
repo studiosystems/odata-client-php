@@ -19,9 +19,10 @@ class ODataClient implements IODataClient
     private string $baseUrl;
 
     /**
-     * The IAuthenticationProvider for authenticating request messages.
+     * Authentication provider used to authorize request messages.
+     * Can be an implementation of IAuthenticationProvider or a Closure.
      */
-    private IAuthenticationProvider|callable|Closure|null $authenticationProvider = null;
+    private IAuthenticationProvider|Closure|null $authenticationProvider = null;
 
     /**
      * The IHttpProvider for sending HTTP requests.
@@ -63,6 +64,13 @@ class ODataClient implements IODataClient
         ?IHttpProvider $httpProvider = null
     ) {
         $this->setBaseUrl($baseUrl);
+        if (
+            is_callable($authenticationProvider) &&
+            ! $authenticationProvider instanceof Closure &&
+            ! $authenticationProvider instanceof IAuthenticationProvider
+        ) {
+            $authenticationProvider = Closure::fromCallable($authenticationProvider);
+        }
         $this->authenticationProvider = $authenticationProvider;
         $this->httpProvider = $httpProvider ?: new GuzzleHttpProvider();
 
@@ -109,7 +117,7 @@ class ODataClient implements IODataClient
     /**
      * Gets the IAuthenticationProvider for authenticating requests.
      */
-    public function getAuthenticationProvider(): callable|IAuthenticationProvider|Closure|null
+    public function getAuthenticationProvider(): IAuthenticationProvider|Closure|null
     {
         return $this->authenticationProvider;
     }

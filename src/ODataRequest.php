@@ -335,7 +335,9 @@ class ODataRequest implements IODataRequest
     private function authenticateRequest(HttpRequestMessage $request): void
     {
         $authenticationProvider = $this->client->getAuthenticationProvider();
-        if (! is_null($authenticationProvider) && is_callable($authenticationProvider)) {
+        if ($authenticationProvider instanceof IAuthenticationProvider) {
+            $authenticationProvider->authenticateRequest($request);
+        } elseif (! is_null($authenticationProvider) && is_callable($authenticationProvider)) {
             $authenticationProvider($request);
         }
     }

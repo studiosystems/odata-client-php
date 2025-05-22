@@ -9,5 +9,5 @@ interface IProcessor
     /**
      * Process the results of a "select" query.
      */
-    public function processSelect(Builder $query, IODataRequest $results): IODataRequest;
+    public function processSelect(Builder $query, array $results): array;
 }

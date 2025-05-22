@@ -45,7 +45,7 @@ class ODataRequest implements IODataRequest
     /**
      * The return type to cast the response as
      */
-    protected ?object $returnType = null;
+    protected string|bool|null $returnType = null;
 
     /**
      * The timeout, in seconds
@@ -98,15 +98,18 @@ class ODataRequest implements IODataRequest
      */
     public function setReturnType(mixed $returnClass): static
     {
-        if (is_null($returnClass)) {
+        if (is_null($returnClass) || $returnClass === false) {
             return $this;
         }
+
         $this->returnType = $returnClass;
-        if (strcasecmp($this->returnType, 'stream') == 0) {
-            $this->returnsStream  = true;
+
+        if (is_string($this->returnType) && strcasecmp($this->returnType, 'stream') == 0) {
+            $this->returnsStream = true;
         } else {
             $this->returnsStream = false;
         }
+
         return $this;
     }
 

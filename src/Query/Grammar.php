@@ -132,7 +132,7 @@ class Grammar implements IGrammar
     /**
      * Compile the entity key portion of the query.
      */
-    protected function compileEntityKey(Builder $query, string|array|null $entityKey): string
+    protected function compileEntityKey(Builder $query, string|int|array|null $entityKey): string
     {
         if (is_null($entityKey)) {
             return '';
@@ -162,7 +162,7 @@ class Grammar implements IGrammar
 
     protected function compileQueryString(Builder $query, $queryString): string
     {
-        if (isset($query->entitySet)
+        if (!empty($query->entitySet)
             && (
                 !empty($query->properties)
                 || !empty($query->wheres)

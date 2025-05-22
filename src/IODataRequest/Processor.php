@@ -10,7 +10,7 @@ class Processor implements IProcessor
     /**
      * @inheritdoc
      */
-    public function processSelect(Builder $query, $results): \Studiosystems\OData\IODataRequest
+    public function processSelect(Builder $query, array $results): array
     {
         return $results;
     }

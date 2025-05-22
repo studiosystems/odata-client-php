@@ -98,7 +98,7 @@ class ODataRequest implements IODataRequest
      */
     public function setReturnType(mixed $returnClass): static
     {
-        if (is_null($returnClass) || $returnClass === false) {
+        if (is_null($returnClass)) {
             return $this;
         }
 

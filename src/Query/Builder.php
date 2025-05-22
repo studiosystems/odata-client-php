@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use stdClass;
+use Studiosystems\OData\Entity;
 use Studiosystems\OData\Constants;
 use Studiosystems\OData\Exception\ODataQueryException;
 use Studiosystems\OData\IODataClient;
@@ -539,7 +540,7 @@ class Builder
      * Execute a query for a single record by ID. Single and multipart IDs are supported.
      * @throws ODataQueryException
      */
-    public function find(int|string|array $id, array $properties = []): stdClass|array|null
+    public function find(int|string|array $id, array $properties = []): Entity|stdClass|array|null
     {
         if (empty($this->entitySet)) {
             throw new ODataQueryException(Constants::ENTITY_SET_REQUIRED);
@@ -559,7 +560,7 @@ class Builder
     /**
      * Execute the query and get the first result.
      */
-    public function first(array $properties = []): stdClass|array|null
+    public function first(array $properties = []): Entity|stdClass|array|null
     {
         return $this->take(1)->get($properties)->first();
     }
@@ -686,7 +687,7 @@ class Builder
      * Run the query as a "GET" request against the client.
      * @return IODataRequest
      */
-    protected function runGet(): array
+    protected function runGet(): array|string
     {
         return $this->client->get(
             $this->grammar->compileSelect($this),

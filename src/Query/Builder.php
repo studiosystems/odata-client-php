@@ -25,12 +25,12 @@ class Builder
     /**
      * Gets the URL for the built request, without query string.
      */
-    public string $requestUrl;
+    public string $requestUrl = '';
 
     /**
      * Gets the URL for the built request, without query string.
      */
-    public object $returnType;
+    public ?object $returnType = null;
 
     /**
      * The current query value bindings.
@@ -44,12 +44,12 @@ class Builder
     /**
      * The entity set which the query is targeting.
      */
-    public string $entitySet;
+    public string $entitySet = '';
 
     /**
      * The entity key of the entity set which the query is targeting.
      */
-    public string $entityKey;
+    public string $entityKey = '';
 
     /**
      * The placeholder property for the ? operator in the OData querystring
@@ -59,53 +59,53 @@ class Builder
     /**
      * An aggregate function to be run.
      */
-    public bool $count;
+    public bool $count = false;
 
     /**
      * Whether to include a total count of items matching
      * the request be returned along with the result
      */
-    public bool $totalCount;
+    public bool $totalCount = false;
 
     /**
      * The specific set of properties to return for this entity or complex type
      */
-    public array $properties;
+    public array $properties = [];
 
     /**
      * The where constraints for the query.
      */
-    public array $wheres;
+    public array $wheres = [];
 
     /**
      * The groupings for the query.
      */
-    public array $groups;
+    public array $groups = [];
 
     /**
      * The orderings for the query.
      */
-    public array $orders;
+    public array $orders = [];
 
     /**
      * The maximum number of records to return.
      */
-    public int $take;
+    public int $take = 0;
 
     /**
      * The desired page size.
      */
-    public int $pageSize;
+    public int $pageSize = 0;
 
     /**
      * The number of records to skip.
      */
-    public int $skip;
+    public int $skip = 0;
 
     /**
      * The skiptoken.
      */
-    public int $skiptoken;
+    public int $skiptoken = 0;
 
     /**
      * All the available clause operators.
@@ -121,7 +121,7 @@ class Builder
 
     public array $select = [];
 
-    public array $expands;
+    public array $expands = [];
 
     private IProcessor $processor;
 

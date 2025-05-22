@@ -49,7 +49,7 @@ class Builder
     /**
      * The entity key of the entity set which the query is targeting.
      */
-    public string $entityKey = '';
+    public string|array|null $entityKey = null;
 
     /**
      * The placeholder property for the ? operator in the OData querystring
@@ -171,7 +171,7 @@ class Builder
     /**
      * Filter the entity set on the primary key.
      */
-    public function whereKey(string $id): static
+    public function whereKey(int|string|array $id): static
     {
         $this->entityKey = $id;
         $this->client->setEntityKey($this->entityKey);
@@ -254,7 +254,7 @@ class Builder
     /**
      * Add a basic where ($filter) clause to the query.
      */
-    public function where(string|array|Closure $column, ?string $operator = null, mixed $value = null, string $boolean = 'and'): static
+    public function where(string|array|Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
     {
         if (is_array($column)) {
             return $this->addArrayOfWheres($column, $boolean);
@@ -321,7 +321,7 @@ class Builder
      * Prepare the value and operator for a where clause.
      * @throws InvalidArgumentException
      */
-    protected function prepareValueAndOperator(string $value, string $operator, bool $useDefault = false): array
+    protected function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
     {
         if ($useDefault) {
             return [$operator, '='];
@@ -353,7 +353,7 @@ class Builder
     /**
      * Add an "or where" clause to the query.
      */
-    public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): static
+    public function orWhere(string|array|Closure $column, ?string $operator = null, mixed $value = null): static
     {
         return $this->where($column, $operator, $value, 'or');
     }
@@ -377,7 +377,7 @@ class Builder
     /**
      * Add a "where" clause comparing two columns to the query.
      */
-    public function whereColumn(string|array $first, ?string $operator = null, ?string $second = null, string $boolean = 'and'): static
+    public function whereColumn(string|array $first, mixed $operator = null, ?string $second = null, string $boolean = 'and'): static
     {
         if (is_array($first)) {
             return $this->addArrayOfWheres($first, $boolean, 'whereColumn');
@@ -539,7 +539,7 @@ class Builder
      */
     public function find(int|string|array $id, array $properties = []): stdClass|array|null
     {
-        if (!isset($this->entitySet)) {
+        if (empty($this->entitySet)) {
             throw new ODataQueryException(Constants::ENTITY_SET_REQUIRED);
         }
         return $this->whereKey($id)->first($properties);

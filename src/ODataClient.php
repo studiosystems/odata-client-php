@@ -21,7 +21,7 @@ class ODataClient implements IODataClient
     /**
      * The IAuthenticationProvider for authenticating request messages.
      */
-    private IAuthenticationProvider $authenticationProvider;
+    private IAuthenticationProvider|callable|Closure|null $authenticationProvider = null;
 
     /**
      * The IHttpProvider for sending HTTP requests.
@@ -59,7 +59,7 @@ class ODataClient implements IODataClient
      */
     public function __construct(
         string $baseUrl,
-        ?callable $authenticationProvider = null,
+        callable|IAuthenticationProvider|Closure|null $authenticationProvider = null,
         ?IHttpProvider $httpProvider = null
     ) {
         $this->setBaseUrl($baseUrl);

@@ -24,12 +24,12 @@ class ODataRequest implements IODataRequest
     /**
      * An array of headers to send with the request
      */
-    protected array $headers;
+    protected array $headers = [];
 
     /**
      * The body of the request (optional)
      */
-    protected string $requestBody;
+    protected string $requestBody = '';
 
     /**
      * The type of request to make ("GET", "POST", etc.)
@@ -40,17 +40,17 @@ class ODataRequest implements IODataRequest
      * True if the response should be returned as
      * a stream
      */
-    protected bool $returnsStream;
+    protected bool $returnsStream = false;
 
     /**
      * The return type to cast the response as
      */
-    protected object $returnType;
+    protected string|bool|null $returnType = null;
 
     /**
      * The timeout, in seconds
      */
-    protected string|int $timeout;
+    protected string|int $timeout = 0;
 
     private IODataClient $client;
 
@@ -101,12 +101,15 @@ class ODataRequest implements IODataRequest
         if (is_null($returnClass)) {
             return $this;
         }
+
         $this->returnType = $returnClass;
-        if (strcasecmp($this->returnType, 'stream') == 0) {
-            $this->returnsStream  = true;
+
+        if (is_string($this->returnType) && strcasecmp($this->returnType, 'stream') == 0) {
+            $this->returnsStream = true;
         } else {
             $this->returnsStream = false;
         }
+
         return $this;
     }
 
@@ -335,7 +338,9 @@ class ODataRequest implements IODataRequest
     private function authenticateRequest(HttpRequestMessage $request): void
     {
         $authenticationProvider = $this->client->getAuthenticationProvider();
-        if (! is_null($authenticationProvider) && is_callable($authenticationProvider)) {
+        if ($authenticationProvider instanceof IAuthenticationProvider) {
+            $authenticationProvider->authenticateRequest($request);
+        } elseif (! is_null($authenticationProvider) && is_callable($authenticationProvider)) {
             $authenticationProvider($request);
         }
     }

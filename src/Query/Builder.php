@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use stdClass;
+use Studiosystems\OData\Entity;
 use Studiosystems\OData\Constants;
 use Studiosystems\OData\Exception\ODataQueryException;
 use Studiosystems\OData\IODataClient;
@@ -25,12 +26,12 @@ class Builder
     /**
      * Gets the URL for the built request, without query string.
      */
-    public string $requestUrl;
+    public string $requestUrl = '';
 
     /**
      * Gets the URL for the built request, without query string.
      */
-    public object $returnType;
+    public ?object $returnType = null;
 
     /**
      * The current query value bindings.
@@ -44,12 +45,12 @@ class Builder
     /**
      * The entity set which the query is targeting.
      */
-    public string $entitySet;
+    public string $entitySet = '';
 
     /**
      * The entity key of the entity set which the query is targeting.
      */
-    public string $entityKey;
+    public string|int|array|null $entityKey = null;
 
     /**
      * The placeholder property for the ? operator in the OData querystring
@@ -59,53 +60,53 @@ class Builder
     /**
      * An aggregate function to be run.
      */
-    public bool $count;
+    public bool $count = false;
 
     /**
      * Whether to include a total count of items matching
      * the request be returned along with the result
      */
-    public bool $totalCount;
+    public bool $totalCount = false;
 
     /**
      * The specific set of properties to return for this entity or complex type
      */
-    public array $properties;
+    public array $properties = [];
 
     /**
      * The where constraints for the query.
      */
-    public array $wheres;
+    public array $wheres = [];
 
     /**
      * The groupings for the query.
      */
-    public array $groups;
+    public array $groups = [];
 
     /**
      * The orderings for the query.
      */
-    public array $orders;
+    public array $orders = [];
 
     /**
      * The maximum number of records to return.
      */
-    public int $take;
+    public int $take = 0;
 
     /**
      * The desired page size.
      */
-    public int $pageSize;
+    public int $pageSize = 0;
 
     /**
      * The number of records to skip.
      */
-    public int $skip;
+    public int $skip = 0;
 
     /**
      * The skiptoken.
      */
-    public int $skiptoken;
+    public int $skiptoken = 0;
 
     /**
      * All the available clause operators.
@@ -121,7 +122,7 @@ class Builder
 
     public array $select = [];
 
-    public array $expands;
+    public array $expands = [];
 
     private IProcessor $processor;
 
@@ -171,7 +172,7 @@ class Builder
     /**
      * Filter the entity set on the primary key.
      */
-    public function whereKey(string $id): static
+    public function whereKey(int|string|array $id): static
     {
         $this->entityKey = $id;
         $this->client->setEntityKey($this->entityKey);
@@ -254,7 +255,7 @@ class Builder
     /**
      * Add a basic where ($filter) clause to the query.
      */
-    public function where(string|array|Closure $column, ?string $operator = null, mixed $value = null, string $boolean = 'and'): static
+    public function where(string|array|Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
     {
         if (is_array($column)) {
             return $this->addArrayOfWheres($column, $boolean);
@@ -321,7 +322,7 @@ class Builder
      * Prepare the value and operator for a where clause.
      * @throws InvalidArgumentException
      */
-    protected function prepareValueAndOperator(string $value, string $operator, bool $useDefault = false): array
+    protected function prepareValueAndOperator(mixed $value, mixed $operator, bool $useDefault = false): array
     {
         if ($useDefault) {
             return [$operator, '='];
@@ -335,10 +336,12 @@ class Builder
      * Determine if the given operator and value combination is legal.
      * Prevents using Null values with invalid operators.
      */
-    protected function invalidOperatorAndValue(string $operator, mixed $value): bool
+    protected function invalidOperatorAndValue(?string $operator, mixed $value): bool
     {
-        return is_null($value) && in_array($operator, $this->operators) &&
-            ! in_array($operator, ['=', '<>', '!=']);
+        return is_null($value)
+            && !is_null($operator)
+            && in_array($operator, $this->operators)
+            && ! in_array($operator, ['=', '<>', '!=']);
     }
 
     /**
@@ -353,7 +356,7 @@ class Builder
     /**
      * Add an "or where" clause to the query.
      */
-    public function orWhere(string|Closure $column, ?string $operator = null, mixed $value = null): static
+    public function orWhere(string|array|Closure $column, ?string $operator = null, mixed $value = null): static
     {
         return $this->where($column, $operator, $value, 'or');
     }
@@ -377,7 +380,7 @@ class Builder
     /**
      * Add a "where" clause comparing two columns to the query.
      */
-    public function whereColumn(string|array $first, ?string $operator = null, ?string $second = null, string $boolean = 'and'): static
+    public function whereColumn(string|array $first, mixed $operator = null, ?string $second = null, string $boolean = 'and'): static
     {
         if (is_array($first)) {
             return $this->addArrayOfWheres($first, $boolean, 'whereColumn');
@@ -537,9 +540,9 @@ class Builder
      * Execute a query for a single record by ID. Single and multipart IDs are supported.
      * @throws ODataQueryException
      */
-    public function find(int|string|array $id, array $properties = []): stdClass|array|null
+    public function find(int|string|array $id, array $properties = []): Entity|stdClass|array|null
     {
-        if (!isset($this->entitySet)) {
+        if (empty($this->entitySet)) {
             throw new ODataQueryException(Constants::ENTITY_SET_REQUIRED);
         }
         return $this->whereKey($id)->first($properties);
@@ -557,7 +560,7 @@ class Builder
     /**
      * Execute the query and get the first result.
      */
-    public function first(array $properties = []): stdClass|array|null
+    public function first(array $properties = []): Entity|stdClass|array|null
     {
         return $this->take(1)->get($properties)->first();
     }
@@ -684,7 +687,7 @@ class Builder
      * Run the query as a "GET" request against the client.
      * @return IODataRequest
      */
-    protected function runGet(): IODataRequest
+    protected function runGet(): array|string
     {
         return $this->client->get(
             $this->grammar->compileSelect($this),
@@ -708,7 +711,7 @@ class Builder
     /**
      * Run the query as a "GET" request against the client.
      */
-    protected function runPatch(array $body): IODataRequest
+    protected function runPatch(array $body): array
     {
         return $this->client->patch(
             $this->grammar->compileSelect($this),
@@ -719,7 +722,7 @@ class Builder
     /**
      * Run the query as a "GET" request against the client.
      */
-    protected function runPost(array $body): IODataRequest
+    protected function runPost(array $body): array
     {
         return $this->client->post(
             $this->grammar->compileSelect($this),
@@ -730,7 +733,7 @@ class Builder
     /**
      * Run the query as a "GET" request against the client.
      */
-    protected function runDelete(): IODataRequest
+    protected function runDelete(): array
     {
         return $this->client->delete(
             $this->grammar->compileSelect($this)
@@ -753,7 +756,7 @@ class Builder
     /**
      * Insert a new record into the database.
      */
-    public function insert(array $values): bool|IODataRequest
+    public function insert(array $values): bool|array
     {
         if (empty($values)) {
             return true;
